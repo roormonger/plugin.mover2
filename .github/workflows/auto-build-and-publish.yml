@@ -14,13 +14,18 @@ jobs:
       contents: write
     steps:
 
-    # The repository generator reads plugin sources from '<workspace>/source/'. Check the
-    #   plugin out into a subdirectory named after its plugin id so it is published as
-    #   'mover2_cleanup' in the generated 'repo' branch.
+    # Checkout at the workspace root: the repo generator resolves the repository URL for
+    #   the published repo.json from 'git remote get-url --push origin' in this directory.
     - name: Checkout plugin
       uses: actions/checkout@v4
-      with:
-        path: source/mover2_cleanup
+
+    # The generator reads plugin sources from '<workspace>/source/<plugin_id>', so stage the
+    #   plugin files into a subdirectory named after its plugin id.
+    - name: Stage plugin source
+      shell: bash
+      run: |
+        mkdir -p source/mover2_cleanup
+        find . -maxdepth 1 -type f -exec cp {} source/mover2_cleanup/ \;
 
     # Identity for the generated repository
     - name: Write repository config
@@ -34,8 +39,8 @@ jobs:
         }
         EOF
 
-    # Build repo.json (plus the plugin files) and publish them to the 'repo' branch.
-    #   This is what Unmanic consumes when this repository is added to it.
+    # Build the plugin bundle + repo.json and publish them to the 'repo' branch.
+    #   This is what Unmanic reads when this repository is added to it.
     - name: Generate and deploy plugin repository
       uses: Unmanic/action.generate-unmanic-plugin-repo@master
       with:
