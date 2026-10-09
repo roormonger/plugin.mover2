@@ -401,6 +401,11 @@ def on_postprocessor_task_results(data):
                 logger.debug("Could not remove source directory '{}': {}".format(source_directory, e))
 
     if settings.get_setting('prune_empty_destination_directories'):
+        try:
+            current_file_out = os.path.abspath(file_movement_data.get('file_out'))
+        except Exception:
+            current_file_out = None
+        current_destination_dir = os.path.dirname(current_file_out) if current_file_out else None
         # The *arr apps move the file OUT of the destination when they import it, leaving the
         #   release directory behind empty. Clear those away, but only ones that have stayed
         #   empty long enough that nothing can be mid-move inside them.
@@ -416,6 +421,13 @@ def on_postprocessor_task_results(data):
                     rel = os.path.relpath(root, destination_directory)
                     # Never remove the destination root itself, or the category directories directly under it
                     if rel == '.' or os.sep not in rel:
+                        continue
+
+                    # Never touch the destination directory of the release being processed right now.
+                    #   A season pack writes every episode into ONE output directory, and Unmanic does not
+                    #   recreate a directory that has gone missing, so pruning it between episodes would
+                    #   fail the next episode and blacklist it.
+                    if current_destination_dir and os.path.abspath(root) == current_destination_dir:
                         continue
                     if not dirs and not files and (now - os.path.getmtime(root)) >= min_age_seconds:
                         os.rmdir(root)

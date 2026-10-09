@@ -1,3 +1,6 @@
+**<span style="color:#56adda">0.1.5</span>**
+- Fork: never prune the destination directory belonging to the release currently being processed. A season pack writes every episode into one output directory and Unmanic does not recreate a missing one, so pruning it between episodes would fail the next episode and blacklist it. The age guard is a backstop, not the primary protection.
+
 **<span style="color:#56adda">0.1.4</span>**
 - Fork: make the already-processed marker reliable. Write the plugin directory marker AND a core `.unmanicignore` lockfile entry on every run, instead of depending on the file-metadata store - that store is keyed to the file fingerprint, so anything that touches the file (a torrent client rechecking it) loses the marker and the preserved source is encoded again on the next scan. Supersedes 0.1.3, which failed to build.
 **<span style="color:#56adda">0.1.3</span>**
