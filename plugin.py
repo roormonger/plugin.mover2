@@ -285,15 +285,35 @@ def on_postprocessor_file_movement(data, task_data_store=None, file_metadata=Non
             logger.error("Original source path could not be found.")
             return data
 
-        # Mark the source file to be ignored on subsequent scans
+        # Mark the source file to be ignored on future scans. Write the plugin's own directory
+        #   marker AND the core .unmanicignore lockfile every time, instead of relying on the
+        #   file-metadata store alone: that store is keyed to the file's fingerprint, so anything
+        #   that touches the file - a torrent client rechecking it, for instance - loses the marker
+        #   and the preserved source gets queued again on the next scan.
         if file_metadata:
             file_metadata.set({'status': 'Ignoring'}, use_source_scope=True)
-            logger.debug("Ignore on next scan written for '{}'.".format(original_source_path))
-        else:
-            directory_info = UnmanicDirectoryInfo(os.path.dirname(original_source_path))
-            directory_info.set('mover2', os.path.basename(original_source_path), 'Ignoring')
+        source_directory = os.path.dirname(original_source_path)
+        source_basename = os.path.basename(original_source_path)
+        try:
+            directory_info = UnmanicDirectoryInfo(source_directory)
+            directory_info.set('mover2', source_basename, 'Ignoring')
             directory_info.save()
-            logger.debug("Ignore on next scan written for '{}'.".format(original_source_path))
+            ignore_file = os.path.join(source_directory, '.unmanicignore')
+            existing_ignores = ''
+            if os.path.exists(ignore_file):
+                with open(ignore_file) as f:
+                    existing_ignores = f.read()
+            if source_basename not in existing_ignores:
+                with open(ignore_file, 'a') as f:
+                    if existing_ignores and not existing_ignores.endswith('
+'):
+                        f.write('
+')
+                    f.write(source_basename + '
+')
+            logger.info("Marked '{}' to be ignored on future scans.".format(original_source_path))
+        except OSError as e:
+            logger.debug("Could not write ignore marker for '{}': {}".format(original_source_path, e))
 
 
 def on_postprocessor_task_results(data):
