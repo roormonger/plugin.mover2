@@ -93,3 +93,8 @@ If the file copy process was unsuccessful, then the original source file will be
 ###### Result:
 - **Source file path:** <span style="color:red">`/library/tv/MyShow/MyShow-S01E01-720p.mkv`</span> (removed)
 - **Destination file path:** <span style="color:green">`/processed/tv/MyShow/MyShow-S01E01-720p.mkv`</span>
+
+
+###### <span style="color:blue">Remove the source directory if it is left empty</span>
+Once the source file has been removed, also delete the directory it sat in when nothing else is left in it.
+Directories that still hold other files - subtitles, nfo, sidecar art, or a seeding torrent's payload - are left alone.

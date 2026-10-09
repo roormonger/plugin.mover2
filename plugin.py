@@ -29,7 +29,7 @@ from unmanic.libs.directoryinfo import UnmanicDirectoryInfo
 from unmanic.libs.unplugins.settings import PluginSettings
 
 # Configure plugin logger
-logger = logging.getLogger("Unmanic.Plugin.mover2")
+logger = logging.getLogger("Unmanic.Plugin.mover2_cleanup")
 
 
 class Settings(PluginSettings):
@@ -39,6 +39,7 @@ class Settings(PluginSettings):
         "recreate_directory_structure": True,
         "include_library_structure":    True,
         "remove_source_file":           False,
+        "remove_empty_source_directory": True,
     }
 
     def __init__(self, *args, **kwargs):
@@ -57,6 +58,11 @@ class Settings(PluginSettings):
             "include_library_structure":    self.__set_include_library_structure(),
             "remove_source_file":           {
                 "label": "Remove source files",
+            },
+            "remove_empty_source_directory": {
+                "label":       "Remove the source directory if it is left empty",
+                "description": "Once the source file has been removed, also delete the directory it sat in when nothing else is left in it. Directories still holding other files (subtitles, nfo, sidecar art, or a seeding torrent's payload) are left alone.",
+                "input_type":  "checkbox",
             },
         }
 
@@ -333,6 +339,18 @@ def on_postprocessor_task_results(data):
             os.remove(unmanic_destination_file)
         else:
             logger.debug("Plugin is configured to ensure the original file is removed. File has already been removed.")
+
+        if settings.get_setting('remove_empty_source_directory'):
+            # Unmanic deletes the file but leaves the directory behind. Clear that up too, but only
+            #   when it is genuinely empty - anything else in there (subtitles, nfo, art, or a seeding
+            #   torrent's payload) means the directory is still in use and must be left alone.
+            source_directory = os.path.dirname(unmanic_destination_file)
+            try:
+                if os.path.isdir(source_directory) and not os.listdir(source_directory):
+                    logger.info("Removed empty source directory '{}'".format(source_directory))
+                    os.rmdir(source_directory)
+            except OSError as e:
+                logger.debug("Could not remove source directory '{}': {}".format(source_directory, e))
 
     # Clean up plugin's data file
     os.remove(plugin_data_file)

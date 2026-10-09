@@ -1,3 +1,7 @@
+**<span style="color:#56adda">0.1.0</span>**
+- Fork: add the "Remove the source directory if it is left empty" option - clear away the source directory after the source file is removed, when it is genuinely empty
+- Fork: rename the plugin id to `mover2_cleanup` so it installs alongside the official mover2
+- Fork: remove the workflow job that opened a PR against the official Unmanic plugin repo
 
 **<span style="color:#56adda">0.0.9</span>**
 - Add support for using the File Metadata helper for storing details on moved files (Requires Unmanic v0.3.0)

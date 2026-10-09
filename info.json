@@ -1,13 +1,13 @@
 {
-    "author": "R3dC4p,Josh.5",
+    "author": "roormonger,Josh.5,R3dC4p",
     "compatibility": [
         1,
         2
     ],
-    "description": "Move completed encodes to a different directory.",
-    "icon": "https://raw.githubusercontent.com/Unmanic/plugin.mover2/master/icon.png",
-    "id": "mover2",
-    "name": "Mover v2",
+    "description": "Move completed encodes to a different directory and clean up the source directory they leave behind.",
+    "icon": "https://raw.githubusercontent.com/roormonger/plugin.mover2/master/icon.png",
+    "id": "mover2_cleanup",
+    "name": "Mover v2 + Directory Cleanup",
     "platform": [
         "all"
     ],
@@ -16,5 +16,5 @@
         "on_postprocessor_task_results": 99
     },
     "tags": "post-processor, mover",
-    "version": "0.0.9"
+    "version": "0.1.0"
 }
