@@ -10,6 +10,8 @@ jobs:
   build-and-publish-plugin:
     runs-on: ubuntu-latest
     name: Build and publish plugin
+    permissions:
+      contents: write
     steps:
 
     # Execute plugin repo gen action
