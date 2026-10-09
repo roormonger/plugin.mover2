@@ -23,6 +23,7 @@ import hashlib
 import json
 import logging
 import os
+import time
 from configparser import NoSectionError, NoOptionError
 
 from unmanic.libs.directoryinfo import UnmanicDirectoryInfo
@@ -41,6 +42,8 @@ class Settings(PluginSettings):
         "remove_source_file":           False,
         "remove_empty_source_directory": True,
         "source_directory_junk_extensions": "nfo,sfv,md5,txt,diz,url,jpg,jpeg,png,gif",
+        "prune_empty_destination_directories": True,
+        "prune_destination_min_age_minutes":   10,
     }
 
     def __init__(self, *args, **kwargs):
@@ -68,6 +71,16 @@ class Settings(PluginSettings):
             "source_directory_junk_extensions": {
                 "label":       "File extensions that do not count as content",
                 "description": "Comma separated. When the source directory holds nothing but these files, it is removed along with them - so a release that keeps an .nfo or .sfv beside the video still gets tidied away. Anything else in the directory (other episodes of a season pack, subtitles) leaves it in place.",
+                "input_type":  "text",
+            },
+            "prune_empty_destination_directories": {
+                "label":       "Prune empty directories left in the destination",
+                "description": "An *arr import MOVES the file out of the destination directory, leaving the release folder behind empty. Enable this and each run will clear away empty directories under the destination directory.",
+                "input_type":  "checkbox",
+            },
+            "prune_destination_min_age_minutes": {
+                "label":       "Only prune destination directories empty for at least (minutes)",
+                "description": "Keeps a directory that is momentarily empty from being yanked mid-use by a copy or a move in progress.",
                 "input_type":  "text",
             },
         }
@@ -368,6 +381,29 @@ def on_postprocessor_task_results(data):
                         os.rmdir(source_directory)
             except OSError as e:
                 logger.debug("Could not remove source directory '{}': {}".format(source_directory, e))
+
+    if settings.get_setting('prune_empty_destination_directories'):
+        # The *arr apps move the file OUT of the destination when they import it, leaving the
+        #   release directory behind empty. Clear those away, but only ones that have stayed
+        #   empty long enough that nothing can be mid-move inside them.
+        destination_directory = settings.get_setting('destination_directory')
+        try:
+            min_age_seconds = int(settings.get_setting('prune_destination_min_age_minutes')) * 60
+        except (TypeError, ValueError):
+            min_age_seconds = 600
+        try:
+            if os.path.isdir(destination_directory):
+                now = time.time()
+                for root, dirs, files in os.walk(destination_directory, topdown=False):
+                    rel = os.path.relpath(root, destination_directory)
+                    # Never remove the destination root itself, or the category directories directly under it
+                    if rel == '.' or os.sep not in rel:
+                        continue
+                    if not dirs and not files and (now - os.path.getmtime(root)) >= min_age_seconds:
+                        os.rmdir(root)
+                        logger.info("Removed empty destination directory '{}'".format(root))
+        except OSError as e:
+            logger.debug("Could not prune destination '{}': {}".format(destination_directory, e))
 
     # Clean up plugin's data file
     os.remove(plugin_data_file)

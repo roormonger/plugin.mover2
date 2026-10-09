@@ -1,3 +1,6 @@
+**<span style="color:#56adda">0.1.2</span>**
+- Fork: add "Prune empty directories left in the destination". A *arr import moves the file out of the Mover's destination and leaves the release directory behind empty, so those now get cleared on the next run once they have stood empty for the configured number of minutes. Runs independently of the source-file settings, and never touches the destination root or the category directories beneath it.
+
 **<span style="color:#56adda">0.1.1</span>**
 - Fork: treat common release sidecar files (.nfo, .sfv, .md5, .txt, .diz, .url and images) as non-content, so a source directory holding only those is still removed. Anything else in the directory still blocks removal, so season packs and seeding payloads stay safe. Configurable via the "File extensions that do not count as content" setting.
 
