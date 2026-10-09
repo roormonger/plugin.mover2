@@ -285,11 +285,12 @@ def on_postprocessor_file_movement(data, task_data_store=None, file_metadata=Non
             logger.error("Original source path could not be found.")
             return data
 
-        # Mark the source file to be ignored on future scans. Write the plugin's own directory
+        # Mark the source file to be ignored on future scans. Write the plugin directory
         #   marker AND the core .unmanicignore lockfile every time, instead of relying on the
-        #   file-metadata store alone: that store is keyed to the file's fingerprint, so anything
-        #   that touches the file - a torrent client rechecking it, for instance - loses the marker
-        #   and the preserved source gets queued again on the next scan.
+        #   file-metadata store alone: that store is keyed to the file fingerprint, so anything
+        #   that touches the file - a torrent client rechecking it, for instance - loses the
+        #   marker and the preserved source gets queued again on the next scan.
+        newline = chr(10)
         if file_metadata:
             file_metadata.set({'status': 'Ignoring'}, use_source_scope=True)
         source_directory = os.path.dirname(original_source_path)
@@ -305,15 +306,12 @@ def on_postprocessor_file_movement(data, task_data_store=None, file_metadata=Non
                     existing_ignores = f.read()
             if source_basename not in existing_ignores:
                 with open(ignore_file, 'a') as f:
-                    if existing_ignores and not existing_ignores.endswith('
-'):
-                        f.write('
-')
-                    f.write(source_basename + '
-')
-            logger.info("Marked '{}' to be ignored on future scans.".format(original_source_path))
+                    if existing_ignores and not existing_ignores.endswith(newline):
+                        f.write(newline)
+                    f.write(source_basename + newline)
+            logger.info("Marked %s to be ignored on future scans." % original_source_path)
         except OSError as e:
-            logger.debug("Could not write ignore marker for '{}': {}".format(original_source_path, e))
+            logger.debug("Could not write ignore marker: %s" % e)
 
 
 def on_postprocessor_task_results(data):

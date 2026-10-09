@@ -1,3 +1,6 @@
+**<span style="color:#56adda">0.1.4</span>**
+- Fork: make the already-processed marker reliable. Write the plugin directory marker AND a core `.unmanicignore` lockfile entry on every run, instead of depending on the file-metadata store - that store is keyed to the file fingerprint, so anything that touches the file (a torrent client rechecking it) loses the marker and the preserved source is encoded again on the next scan. Supersedes 0.1.3, which failed to build.
+
 **<span style="color:#56adda">0.1.3</span>**
 - Fork: make the "already processed" marker reliable for preserved sources. Write the plugin's own directory marker AND a core `.unmanicignore` lockfile entry on every run, rather than depending on the file-metadata store - that store is keyed to the file fingerprint, so anything that touches the file (a torrent client rechecking it) loses the marker and the source is queued again. Without this a preserved source is re-encoded every scan.
 
