@@ -1,0 +1,31 @@
+{
+    "repo": {
+        "id": "repository.roormonger",
+        "name": "roormonger plugins",
+        "icon": "",
+        "repo_data_directory": "https://raw.githubusercontent.com/roormonger/plugin.mover2/repo/",
+        "repo_data_url": "https://raw.githubusercontent.com/roormonger/plugin.mover2/repo/repo.json"
+    },
+    "plugins": [
+        {
+            "author": "roormonger,Josh.5,R3dC4p",
+            "compatibility": [
+                1,
+                2
+            ],
+            "description": "Move completed encodes to a different directory and clean up the source directory they leave behind.",
+            "icon": "https://raw.githubusercontent.com/roormonger/plugin.mover2/master/icon.png",
+            "id": "mover2_cleanup",
+            "name": "Mover v2 + Directory Cleanup",
+            "platform": [
+                "all"
+            ],
+            "priorities": {
+                "on_postprocessor_file_movement": 0,
+                "on_postprocessor_task_results": 99
+            },
+            "tags": "post-processor, mover",
+            "version": "0.1.5"
+        }
+    ]
+}
