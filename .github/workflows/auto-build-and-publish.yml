@@ -14,13 +14,13 @@ jobs:
       contents: write
     steps:
 
-    # Check the plugin out into a directory named after its plugin id. The repository
-    #   generator scans the subdirectories of this repo and publishes each one that
-    #   contains an info.json as a plugin in the generated 'repo' branch.
+    # The repository generator reads plugin sources from '<workspace>/source/'. Check the
+    #   plugin out into a subdirectory named after its plugin id so it is published as
+    #   'mover2_cleanup' in the generated 'repo' branch.
     - name: Checkout plugin
       uses: actions/checkout@v4
       with:
-        path: mover2_cleanup
+        path: source/mover2_cleanup
 
     # Identity for the generated repository
     - name: Write repository config
