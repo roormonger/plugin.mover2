@@ -40,6 +40,7 @@ class Settings(PluginSettings):
         "include_library_structure":    True,
         "remove_source_file":           False,
         "remove_empty_source_directory": True,
+        "source_directory_junk_extensions": "nfo,sfv,md5,txt,diz,url,jpg,jpeg,png,gif",
     }
 
     def __init__(self, *args, **kwargs):
@@ -63,6 +64,11 @@ class Settings(PluginSettings):
                 "label":       "Remove the source directory if it is left empty",
                 "description": "Once the source file has been removed, also delete the directory it sat in when nothing else is left in it. Directories still holding other files (subtitles, nfo, sidecar art, or a seeding torrent's payload) are left alone.",
                 "input_type":  "checkbox",
+            },
+            "source_directory_junk_extensions": {
+                "label":       "File extensions that do not count as content",
+                "description": "Comma separated. When the source directory holds nothing but these files, it is removed along with them - so a release that keeps an .nfo or .sfv beside the video still gets tidied away. Anything else in the directory (other episodes of a season pack, subtitles) leaves it in place.",
+                "input_type":  "text",
             },
         }
 
@@ -341,14 +347,25 @@ def on_postprocessor_task_results(data):
             logger.debug("Plugin is configured to ensure the original file is removed. File has already been removed.")
 
         if settings.get_setting('remove_empty_source_directory'):
-            # Unmanic deletes the file but leaves the directory behind. Clear that up too, but only
-            #   when it is genuinely empty - anything else in there (subtitles, nfo, art, or a seeding
-            #   torrent's payload) means the directory is still in use and must be left alone.
+            # Unmanic deletes the source file but leaves its directory behind, along with whatever
+            #   sidecar files the release shipped with. Clear the directory up once nothing but those
+            #   throwaway files remain. Anything else - another episode of a season pack, subtitles, a
+            #   seeding torrent's payload - means it is still in use and gets left alone.
+            junk_extensions = [e.strip().lower().lstrip('.')
+                               for e in settings.get_setting('source_directory_junk_extensions').split(',')
+                               if e.strip()]
             source_directory = os.path.dirname(unmanic_destination_file)
             try:
-                if os.path.isdir(source_directory) and not os.listdir(source_directory):
-                    logger.info("Removed empty source directory '{}'".format(source_directory))
-                    os.rmdir(source_directory)
+                if os.path.isdir(source_directory):
+                    remaining = os.listdir(source_directory)
+                    keep = [f for f in remaining
+                            if os.path.isdir(os.path.join(source_directory, f)) or
+                            os.path.splitext(f)[1].lower().lstrip('.') not in junk_extensions]
+                    if not keep:
+                        for f in remaining:
+                            os.remove(os.path.join(source_directory, f))
+                        logger.info("Removed source directory '{}' (it held only sidecar files)".format(source_directory))
+                        os.rmdir(source_directory)
             except OSError as e:
                 logger.debug("Could not remove source directory '{}': {}".format(source_directory, e))
 

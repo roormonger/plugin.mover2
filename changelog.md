@@ -1,3 +1,6 @@
+**<span style="color:#56adda">0.1.1</span>**
+- Fork: treat common release sidecar files (.nfo, .sfv, .md5, .txt, .diz, .url and images) as non-content, so a source directory holding only those is still removed. Anything else in the directory still blocks removal, so season packs and seeding payloads stay safe. Configurable via the "File extensions that do not count as content" setting.
+
 **<span style="color:#56adda">0.1.0</span>**
 - Fork: add the "Remove the source directory if it is left empty" option - clear away the source directory after the source file is removed, when it is genuinely empty
 - Fork: rename the plugin id to `mover2_cleanup` so it installs alongside the official mover2
