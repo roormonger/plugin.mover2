@@ -14,8 +14,30 @@ jobs:
       contents: write
     steps:
 
-    # Execute plugin repo gen action
-    - name: Build and publish plugin
-      uses: Unmanic/action.build-and-publish-unmanic-plugin@master
+    # Check the plugin out into a directory named after its plugin id. The repository
+    #   generator scans the subdirectories of this repo and publishes each one that
+    #   contains an info.json as a plugin in the generated 'repo' branch.
+    - name: Checkout plugin
+      uses: actions/checkout@v4
       with:
+        path: mover2_cleanup
+
+    # Identity for the generated repository
+    - name: Write repository config
+      shell: bash
+      run: |
+        cat << EOF > config.json
+        {
+            "id": "repository.roormonger",
+            "name": "roormonger plugins",
+            "icon": ""
+        }
+        EOF
+
+    # Build repo.json (plus the plugin files) and publish them to the 'repo' branch.
+    #   This is what Unmanic consumes when this repository is added to it.
+    - name: Generate and deploy plugin repository
+      uses: Unmanic/action.generate-unmanic-plugin-repo@master
+      with:
+        deploy_repo: 'true'
         github_token: ${{ secrets.GITHUB_TOKEN }}
